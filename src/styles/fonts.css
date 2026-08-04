@@ -1,0 +1,15 @@
+/* Self-hosted fonts (bundled at build time — the diary works fully offline). */
+
+@import "@fontsource-variable/inter/index.css";
+@import "@fontsource/playfair-display/400.css";
+@import "@fontsource/playfair-display/500.css";
+@import "@fontsource/playfair-display/600.css";
+@import "@fontsource/playfair-display/700.css";
+@import "@fontsource/playfair-display/400-italic.css";
+@import "@fontsource/playfair-display/600-italic.css";
+@import "@fontsource/dm-serif-display/400.css";
+
+/* Fluent optical sizing for the variable Inter. */
+body {
+  font-optical-sizing: auto;
+}

@@ -1,0 +1,358 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ================================================================
+   Inkwell design tokens
+   Every surface is driven by CSS variables so a palette swap is a
+   single attribute change on <html data-theme="…">.
+   ================================================================ */
+
+@layer base {
+  /* Default: Aurora (light) — also the no-JS fallback. */
+  :root {
+    color-scheme: light;
+
+    --background: 34 100% 97.6%;
+    --background-secondary: 33 85% 94.5%;
+    --card: 40 100% 100%;
+    --card-foreground: 28 22% 18%;
+    --border: 33 30% 88%;
+    --border-strong: 32 24% 79%;
+    --foreground: 28 22% 18%;
+    --muted: 30 12% 42%;
+    --faint: 31 12% 62%;
+    --accent: 12 100% 70%;
+    --accent-foreground: 0 0% 100%;
+    --secondary: 45 100% 71%;
+    --secondary-foreground: 38 60% 18%;
+    --ring: 12 92% 64%;
+    --shadow: 30 40% 18%;
+  }
+
+  [data-theme="aurora"] {
+    --background: 34 100% 97.6%;
+    --background-secondary: 33 85% 94.5%;
+    --card: 40 100% 100%;
+    --card-foreground: 28 22% 18%;
+    --border: 33 30% 88%;
+    --border-strong: 32 24% 79%;
+    --foreground: 28 22% 18%;
+    --muted: 30 12% 42%;
+    --faint: 31 12% 62%;
+    --accent: 12 100% 70%;
+    --accent-foreground: 0 0% 100%;
+    --secondary: 45 100% 71%;
+    --secondary-foreground: 38 60% 18%;
+    --ring: 12 92% 64%;
+    --shadow: 30 40% 18%;
+  }
+
+  [data-theme="aurora"].dark {
+    color-scheme: dark;
+    --background: 28 26% 9.5%;
+    --background-secondary: 28 20% 13%;
+    --card: 28 21% 12.5%;
+    --card-foreground: 32 30% 90%;
+    --border: 28 14% 21%;
+    --border-strong: 28 11% 29%;
+    --foreground: 32 28% 92%;
+    --muted: 30 10% 63%;
+    --faint: 30 8% 45%;
+    --accent: 12 88% 66%;
+    --accent-foreground: 0 0% 100%;
+    --secondary: 45 84% 58%;
+    --secondary-foreground: 40 50% 12%;
+    --ring: 12 88% 66%;
+    --shadow: 0 0% 0%;
+  }
+
+  [data-theme="ocean"] {
+    color-scheme: light;
+    --background: 204 40% 97%;
+    --background-secondary: 205 35% 93%;
+    --card: 206 60% 99.5%;
+    --card-foreground: 208 28% 19%;
+    --border: 205 22% 88%;
+    --border-strong: 205 18% 79%;
+    --foreground: 208 28% 19%;
+    --muted: 208 12% 43%;
+    --faint: 207 12% 63%;
+    --accent: 203 46% 50%;
+    --accent-foreground: 0 0% 100%;
+    --secondary: 199 49% 71%;
+    --secondary-foreground: 204 50% 16%;
+    --ring: 203 50% 46%;
+    --shadow: 210 40% 15%;
+  }
+
+  [data-theme="ocean"].dark {
+    color-scheme: dark;
+    --background: 210 32% 8.5%;
+    --background-secondary: 210 26% 12%;
+    --card: 210 24% 11.5%;
+    --card-foreground: 205 30% 91%;
+    --border: 208 16% 21%;
+    --border-strong: 207 13% 29%;
+    --foreground: 205 30% 91%;
+    --muted: 207 12% 62%;
+    --faint: 207 10% 44%;
+    --accent: 199 55% 62%;
+    --accent-foreground: 205 45% 10%;
+    --secondary: 197 45% 48%;
+    --secondary-foreground: 200 50% 12%;
+    --ring: 199 55% 62%;
+    --shadow: 0 0% 0%;
+  }
+
+  [data-theme="forest"] {
+    color-scheme: light;
+    --background: 90 25% 96.5%;
+    --background-secondary: 92 22% 92%;
+    --card: 90 40% 99%;
+    --card-foreground: 145 20% 18%;
+    --border: 95 15% 87%;
+    --border-strong: 95 13% 78%;
+    --foreground: 145 20% 18%;
+    --muted: 140 10% 40%;
+    --faint: 140 9% 60%;
+    --accent: 146 30% 43%;
+    --accent-foreground: 0 0% 100%;
+    --secondary: 84 34% 66%;
+    --secondary-foreground: 100 35% 14%;
+    --ring: 146 34% 40%;
+    --shadow: 140 30% 15%;
+  }
+
+  [data-theme="forest"].dark {
+    color-scheme: dark;
+    --background: 150 22% 8.5%;
+    --background-secondary: 148 18% 12%;
+    --card: 148 17% 11.5%;
+    --card-foreground: 100 25% 90%;
+    --border: 145 12% 21%;
+    --border-strong: 145 10% 29%;
+    --foreground: 100 25% 90%;
+    --muted: 140 10% 60%;
+    --faint: 140 8% 43%;
+    --accent: 146 34% 55%;
+    --accent-foreground: 150 30% 10%;
+    --secondary: 84 30% 52%;
+    --secondary-foreground: 100 35% 14%;
+    --ring: 146 34% 55%;
+    --shadow: 0 0% 0%;
+  }
+
+  [data-theme="lavender"] {
+    color-scheme: light;
+    --background: 262 40% 97%;
+    --background-secondary: 260 36% 93%;
+    --card: 265 60% 99.5%;
+    --card-foreground: 258 25% 20%;
+    --border: 260 22% 88%;
+    --border-strong: 259 18% 79%;
+    --foreground: 258 25% 20%;
+    --muted: 258 14% 43%;
+    --faint: 258 13% 63%;
+    --accent: 260 38% 63%;
+    --accent-foreground: 0 0% 100%;
+    --secondary: 258 48% 82%;
+    --secondary-foreground: 260 35% 20%;
+    --ring: 260 42% 58%;
+    --shadow: 260 35% 16%;
+  }
+
+  [data-theme="lavender"].dark {
+    color-scheme: dark;
+    --background: 262 28% 9%;
+    --background-secondary: 262 22% 12.5%;
+    --card: 262 20% 12%;
+    --card-foreground: 258 35% 91%;
+    --border: 260 14% 22%;
+    --border-strong: 259 12% 30%;
+    --foreground: 258 35% 91%;
+    --muted: 258 14% 62%;
+    --faint: 258 10% 45%;
+    --accent: 258 45% 72%;
+    --accent-foreground: 260 40% 12%;
+    --secondary: 258 40% 60%;
+    --secondary-foreground: 260 40% 14%;
+    --ring: 258 45% 72%;
+    --shadow: 0 0% 0%;
+  }
+
+  [data-theme="sunset"] {
+    color-scheme: light;
+    --background: 20 50% 97%;
+    --background-secondary: 20 45% 93%;
+    --card: 24 70% 99.5%;
+    --card-foreground: 355 18% 20%;
+    --border: 18 28% 88%;
+    --border-strong: 18 22% 79%;
+    --foreground: 355 18% 20%;
+    --muted: 355 12% 42%;
+    --faint: 355 12% 62%;
+    --accent: 355 55% 64%;
+    --accent-foreground: 0 0% 100%;
+    --secondary: 27 78% 67%;
+    --secondary-foreground: 22 60% 16%;
+    --ring: 355 55% 60%;
+    --shadow: 20 40% 16%;
+  }
+
+  [data-theme="sunset"].dark {
+    color-scheme: dark;
+    --background: 350 24% 9%;
+    --background-secondary: 350 19% 12.5%;
+    --card: 350 18% 12%;
+    --card-foreground: 20 30% 90%;
+    --border: 350 12% 21%;
+    --border-strong: 350 10% 29%;
+    --foreground: 20 30% 90%;
+    --muted: 350 10% 60%;
+    --faint: 350 8% 44%;
+    --accent: 355 52% 68%;
+    --accent-foreground: 355 45% 12%;
+    --secondary: 27 70% 60%;
+    --secondary-foreground: 22 60% 14%;
+    --ring: 355 52% 68%;
+    --shadow: 0 0% 0%;
+  }
+
+  /* Midnight is always night — both modes are deep navy. */
+  [data-theme="midnight"] {
+    color-scheme: dark;
+    --background: 222 40% 10%;
+    --background-secondary: 222 32% 14%;
+    --card: 223 30% 13%;
+    --card-foreground: 220 30% 92%;
+    --border: 222 18% 22%;
+    --border-strong: 222 14% 30%;
+    --foreground: 220 30% 92%;
+    --muted: 222 12% 62%;
+    --faint: 222 10% 45%;
+    --accent: 213 62% 73%;
+    --accent-foreground: 220 60% 12%;
+    --secondary: 232 56% 64%;
+    --secondary-foreground: 235 60% 12%;
+    --ring: 213 62% 73%;
+    --shadow: 0 0% 0%;
+  }
+
+  [data-theme="midnight"].dark {
+    --background: 226 45% 6.5%;
+    --background-secondary: 226 32% 10%;
+    --card: 226 28% 9.5%;
+    --card-foreground: 222 30% 93%;
+    --border: 225 16% 18%;
+    --border-strong: 225 12% 26%;
+    --foreground: 222 30% 93%;
+    --muted: 224 12% 60%;
+    --faint: 224 9% 42%;
+    --accent: 213 60% 68%;
+    --accent-foreground: 220 60% 10%;
+    --secondary: 232 52% 60%;
+    --secondary-foreground: 235 55% 12%;
+    --ring: 213 60% 68%;
+    --shadow: 0 0% 0%;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-feature-settings: "liga" 1, "kern" 1;
+    overflow-x: hidden;
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+
+  ::selection {
+    background: hsl(var(--accent) / 0.28);
+  }
+
+  ::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border-strong) / 0.7);
+    border-radius: 999px;
+    border: 2px solid hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--border-strong));
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border-strong) / 0.7) transparent;
+  }
+
+  input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: hsl(var(--card) / 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .hairline {
+    background: linear-gradient(to right, transparent, hsl(var(--border-strong)), transparent);
+  }
+
+  .noise-overlay {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+    background-size: 140px 140px;
+    opacity: 0.03;
+    mix-blend-mode: multiply;
+  }
+
+  .dark .noise-overlay {
+    opacity: 0.035;
+    mix-blend-mode: screen;
+  }
+}
+
+/* Compact layout: tighten the paper card and view rhythm. */
+.compact .paper-card {
+  padding-left: 1.25rem !important;
+  padding-right: 1.25rem !important;
+  padding-top: 1.5rem !important;
+  padding-bottom: 1.5rem !important;
+}
+@media (min-width: 768px) {
+  .compact .paper-card {
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+}
+
+/* ================================================================
+   Reduced motion — users who ask for calm get calm.
+   Framer Motion additionally respects this via MotionConfig.
+   ================================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
