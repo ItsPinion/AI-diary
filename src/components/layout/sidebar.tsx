@@ -18,6 +18,7 @@ import { useStats } from "@/hooks/use-stats";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { SearchBar } from "@/components/search/search-bar";
+import { BackupNudge } from "@/components/backup/backup-nudge";
 import { bus } from "@/lib/bus";
 import { moodById } from "@/constants/moods";
 import { quoteForDay, greetingForHour } from "@/lib/quotes";
@@ -243,8 +244,9 @@ export function Sidebar({
           </div>
         </div>
 
-        {/* quote + collapse footer */}
-        <div className="border-t border-border/70 px-5 pb-5 pt-4">
+        {/* backup reminder + quote footer */}
+        <div className="space-y-3 border-t border-border/70 px-5 pb-5 pt-4">
+          <BackupNudge />
           <motion.figure
             key={`${quote.text}-${now.getDate()}`}
             initial={{ opacity: 0, y: 8 }}

@@ -2,8 +2,16 @@
 
 import * as React from "react";
 import {
+  CircleCheck,
+  CircleX,
   Download,
+  Eye,
+  EyeOff,
   FileJson,
+  HardDriveDownload,
+  LoaderCircle,
+  PlugZap,
+  WandSparkles,
   FileText,
   LayoutPanelTop,
   RotateCcw,
@@ -14,6 +22,7 @@ import {
 import { useDiary } from "@/hooks/use-diary";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
@@ -26,8 +35,10 @@ import {
 } from "@/components/ui/dialog";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { ConfirmDialog } from "@/components/dialogs/confirm-dialog";
-import { AUTOSAVE_OPTIONS } from "@/constants/settings";
-import { downloadFile, entriesToJson, entriesToMarkdown, entriesToTxt, parseImport } from "@/lib/export";
+import { AUTOSAVE_OPTIONS, BACKUP_REMINDER_OPTIONS } from "@/constants/settings";
+import { downloadBackup, downloadFile, entriesToJson, entriesToMarkdown, entriesToTxt, parseImport } from "@/lib/export";
+import { testGeminiKey } from "@/lib/ai/test-key";
+import type { KeyTestResult } from "@/lib/ai/proofread";
 import { todayKey } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import type { DiaryEntry, FontSize } from "@/types";
@@ -79,13 +90,74 @@ function Section({ icon, title, children }: { icon: React.ReactNode; title: stri
 }
 
 export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  const { entries, settings, updateSettings, importEntries, resetAll } = useDiary();
+  const { entries, settings, updateSettings, importEntries, resetAll, backup, aiEnabled } = useDiary();
   const { toast } = useToast();
   const fileRef = React.useRef<HTMLInputElement>(null);
   const [pendingImport, setPendingImport] = React.useState<{ entries: DiaryEntry[]; fileName: string } | null>(null);
   const [confirmReset, setConfirmReset] = React.useState(false);
+  const [keyDraft, setKeyDraft] = React.useState(settings.geminiApiKey);
+  const [revealKey, setRevealKey] = React.useState(false);
+  const [testing, setTesting] = React.useState(false);
+  const [keyTest, setKeyTest] = React.useState<(KeyTestResult & { saved?: boolean }) | null>(null);
 
   const stamp = todayKey();
+
+  /** Commit on blur so typing doesn't hammer localStorage. */
+  const saveKey = (value: string) => {
+    const next = value.trim();
+    if (next === settings.geminiApiKey) return false;
+    updateSettings({ geminiApiKey: next });
+    return true;
+  };
+
+  /**
+   * Test whatever is in the box — or the server key when it is empty — and
+   * keep a key that passes, so nobody tests a key and forgets to save it.
+   */
+  const handleTestKey = async () => {
+    setTesting(true);
+    setKeyTest(null);
+    const candidate = keyDraft.trim();
+    try {
+      const result = await testGeminiKey(candidate || undefined);
+      const saved = result.ok && candidate ? saveKey(candidate) : false;
+      setKeyTest({ ...result, saved });
+      if (!result.ok) {
+        toast({ title: "That key didn't work", description: result.error, variant: "error" });
+      }
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const clearKey = () => {
+    setKeyDraft("");
+    setKeyTest(null);
+    updateSettings({ geminiApiKey: "" });
+    toast({
+      title: "Key removed",
+      description: aiEnabled ? "Falling back to the server key." : "Fix with AI is hidden until a key exists.",
+      variant: "info",
+    });
+  };
+
+  const lastBackupLabel = settings.lastBackupAt
+    ? new Date(settings.lastBackupAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })
+    : null;
+
+  const handleBackup = () => {
+    if (entries.length === 0) {
+      toast({ title: "Nothing to back up yet", variant: "info" });
+      return;
+    }
+    const name = downloadBackup(entries);
+    updateSettings({ lastBackupAt: new Date().toISOString() });
+    toast({
+      title: "Backup downloaded",
+      description: `${entries.length} page${entries.length === 1 ? "" : "s"} saved to ${name}.`,
+      variant: "success",
+    });
+  };
 
   const doExport = (kind: "json" | "md" | "txt") => {
     if (entries.length === 0) {
@@ -189,6 +261,132 @@ export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenCh
                   onChange={(autosaveMs) => updateSettings({ autosaveMs })}
                 />
                 <p className="text-xs text-faint">Your words are also saved when you leave the page.</p>
+              </div>
+            </Section>
+
+            <Separator />
+
+            <Section icon={<HardDriveDownload className="h-3.5 w-3.5" />} title="Backups">
+              <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border/70 bg-background-secondary/60 px-4 py-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-foreground">Full backup</p>
+                  <p className="text-xs text-muted">
+                    {backup.pages} page{backup.pages === 1 ? "" : "s"} in one JSON file ·{" "}
+                    {lastBackupLabel ? `last backed up ${lastBackupLabel}` : "never backed up"}
+                  </p>
+                </div>
+                <Button size="sm" onClick={handleBackup}>
+                  <HardDriveDownload className="h-4 w-4" /> Back up now
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Remind me to back up</Label>
+                <Segmented
+                  ariaLabel="Backup reminder"
+                  value={settings.backupReminderDays}
+                  options={BACKUP_REMINDER_OPTIONS}
+                  onChange={(backupReminderDays) => updateSettings({ backupReminderDays })}
+                />
+                <p className="text-xs text-faint">
+                  {settings.backupReminderDays === 0
+                    ? "Reminders are off. You can still back up any time from here."
+                    : "A nudge appears in the sidebar when pages have changed since your last backup."}{" "}
+                  Restore a backup with <span className="text-muted">Import</span> below.
+                </p>
+              </div>
+            </Section>
+
+            <Separator />
+
+            <Section icon={<WandSparkles className="h-3.5 w-3.5" />} title="AI writing assistant">
+              <div className="space-y-2">
+                <Label htmlFor="gemini-api-key">Gemini API key</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="gemini-api-key"
+                    type={revealKey ? "text" : "password"}
+                    value={keyDraft}
+                    autoComplete="off"
+                    spellCheck={false}
+                    placeholder={aiEnabled ? "Using the server key — add your own to override" : "AIza…"}
+                    aria-describedby="gemini-api-key-help"
+                    onChange={(e) => {
+                      setKeyDraft(e.target.value);
+                      setKeyTest(null);
+                    }}
+                    onBlur={(e) => saveKey(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        void handleTestKey();
+                      }
+                    }}
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-10 w-10 shrink-0"
+                    aria-pressed={revealKey}
+                    aria-label={revealKey ? "Hide API key" : "Show API key"}
+                    onClick={() => setRevealKey((reveal) => !reveal)}
+                  >
+                    {revealKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={() => void handleTestKey()} disabled={testing}>
+                    {testing ? (
+                      <LoaderCircle className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <PlugZap className="h-4 w-4" />
+                    )}
+                    {testing ? "Testing…" : keyDraft.trim() ? "Test key" : "Test server key"}
+                  </Button>
+                  {settings.geminiApiKey && (
+                    <Button size="sm" variant="ghost" onClick={clearKey}>
+                      Clear
+                    </Button>
+                  )}
+                  {keyTest && !testing && (
+                    <span
+                      role="status"
+                      className={cn(
+                        "inline-flex items-center gap-1.5 text-xs",
+                        keyTest.ok ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400",
+                      )}
+                    >
+                      {keyTest.ok ? <CircleCheck className="h-3.5 w-3.5" /> : <CircleX className="h-3.5 w-3.5" />}
+                      {keyTest.ok
+                        ? `${keyTest.saved ? "Saved and working" : keyTest.source === "server" ? "Server key works" : "Works"} — ${keyTest.model} in ${keyTest.ms} ms`
+                        : keyTest.error}
+                    </span>
+                  )}
+                  {testing && (
+                    <span role="status" className="animate-pulse-soft text-xs text-muted">
+                      Contacting Gemini…
+                    </span>
+                  )}
+                </div>
+
+                <p id="gemini-api-key-help" className="text-xs text-faint">
+                  Get a key from{" "}
+                  <a
+                    className="text-accent underline-offset-4 hover:underline"
+                    href="https://aistudio.google.com/apikey"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Google AI Studio
+                  </a>
+                  . It is stored in this browser and sent only to your own Inkwell server, which
+                  forwards it to Google. Leave it blank to use the server&rsquo;s{" "}
+                  <code className="text-muted">GEMINI_API_KEY</code>
+                  {aiEnabled ? " (already configured)" : " (not set)"}. Pressing{" "}
+                  <span className="font-medium text-muted">Fix with AI</span> sends the open page to
+                  Gemini — nothing else leaves your device.
+                </p>
               </div>
             </Section>
 

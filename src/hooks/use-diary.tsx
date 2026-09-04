@@ -13,6 +13,7 @@ import {
 import type { AppView, DiaryEntry, DiarySettings, MoodId } from "@/types";
 import { DEFAULT_SETTINGS } from "@/constants/settings";
 import { clearAllStorage, createEntry, loadEntries, loadSettings, saveEntries, saveSettings } from "@/lib/storage";
+import { backupStatus, isMeaningfulEntry, type BackupStatus } from "@/lib/backup";
 import { todayKey } from "@/lib/dates";
 
 export type EntryPatch = Partial<Pick<DiaryEntry, "title" | "content" | "mood" | "favorite">>;
@@ -30,6 +31,13 @@ interface DiaryApi {
   /** Today's key, kept fresh across midnight. */
   today: string;
   hydrated: boolean;
+  /**
+   * True only when the server was started with a Gemini API key. The editor
+   * hides "Fix with AI" otherwise, so the button can never be dead.
+   */
+  aiEnabled: boolean;
+  /** Whether a backup reminder is due, and how much would be lost. */
+  backup: BackupStatus;
   setView: (view: AppView) => void;
   /** Open a page (any date) in the editor. */
   openEntry: (date: string) => void;
@@ -45,7 +53,7 @@ interface DiaryApi {
 
 const DiaryContext = createContext<DiaryApi | null>(null);
 
-export function DiaryProvider({ children }: { children: ReactNode }) {
+export function DiaryProvider({ children, aiEnabled }: { children: ReactNode; aiEnabled: boolean }) {
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [settings, setSettings] = useState<DiarySettings>(DEFAULT_SETTINGS);
   const [view, setView] = useState<AppView>("editor");
@@ -188,11 +196,14 @@ export function DiaryProvider({ children }: { children: ReactNode }) {
   // Blank auto-created placeholders stay in storage but don't clutter
   // the journal, search results or statistics.
   const sortedEntries = useMemo(() => {
-    const meaningful = entries.filter(
-      (e) => e.title.trim() !== "" || e.content.trim() !== "" || e.mood !== null || e.favorite,
-    );
+    const meaningful = entries.filter(isMeaningfulEntry);
     return [...meaningful].sort((a, b) => b.date.localeCompare(a.date));
   }, [entries]);
+
+  const backup = useMemo(
+    () => backupStatus(entries, settings),
+    [entries, settings.lastBackupAt, settings.backupReminderDays], // eslint-disable-line react-hooks/exhaustive-deps
+  );
 
   const favorites = useMemo(
     () => sortedEntries.filter((e) => e.favorite),
@@ -209,6 +220,8 @@ export function DiaryProvider({ children }: { children: ReactNode }) {
       selectedDate,
       today,
       hydrated,
+      aiEnabled,
+      backup,
       setView,
       openEntry,
       updateEntry,
@@ -228,6 +241,8 @@ export function DiaryProvider({ children }: { children: ReactNode }) {
       selectedDate,
       today,
       hydrated,
+      aiEnabled,
+      backup,
       openEntry,
       updateEntry,
       deleteEntry,

@@ -11,6 +11,9 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // Lets `scripts/*.mts` import the real `src/**/*.ts` modules and run them
+    // straight through Node's type stripping (`node scripts/verify-proofread.mts`).
+    "allowImportingTsExtensions": true,
     "jsx": "preserve",
     "incremental": true,
     "plugins": [{ "name": "next" }],

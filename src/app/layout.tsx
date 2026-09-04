@@ -26,13 +26,17 @@ export const viewport: Viewport = {
 const themeBootScript = `try{var s=JSON.parse(localStorage.getItem('inkwell.settings.v1')||'null');if(s&&s.theme)document.documentElement.dataset.theme=s.theme}catch(e){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // Only a boolean crosses to the browser — never the key itself. Without a
+  // key on the server the editor doesn't render the "Fix with AI" button at all.
+  const aiEnabled = Boolean(process.env.GEMINI_API_KEY?.trim());
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body className="min-h-dvh bg-background font-sans text-foreground antialiased">
-        <Providers>{children}</Providers>
+        <Providers aiEnabled={aiEnabled}>{children}</Providers>
       </body>
     </html>
   );

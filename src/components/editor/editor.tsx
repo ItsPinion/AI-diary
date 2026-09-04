@@ -5,15 +5,20 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Check,
   Clock,
+  Loader2,
   MoreHorizontal,
   Sparkles,
   Star,
   Trash2,
+  WandSparkles,
 } from "lucide-react";
 import { useDiary } from "@/hooks/use-diary";
+import { useProofread } from "@/hooks/use-proofread";
 import { useToast } from "@/components/ui/toast";
 import { MoodPicker } from "@/components/editor/mood-picker";
+import { ProofreadPanel } from "@/components/editor/proofread-panel";
 import { WRITING_PROMPTS } from "@/components/editor/prompts";
+import { Button } from "@/components/ui/button";
 import { moodById } from "@/constants/moods";
 import { FavoriteButton } from "@/components/cards/entry-card";
 import { ConfirmDialog } from "@/components/dialogs/confirm-dialog";
@@ -29,8 +34,9 @@ import { cn } from "@/lib/utils";
 import { EASE } from "@/lib/motion";
 
 export function EditorView() {
-  const { entries, selectedDate, today, settings, updateEntry, deleteEntry, setMood, toggleFavorite } = useDiary();
+  const { entries, selectedDate, today, settings, updateEntry, deleteEntry, setMood, toggleFavorite, aiEnabled } = useDiary();
   const { toast } = useToast();
+  const proofread = useProofread();
 
   const entry = React.useMemo(
     () => entries.find((e) => e.date === selectedDate),
@@ -152,6 +158,29 @@ export function EditorView() {
     toast({ title: "Page deleted", description: "It's gone from this device.", variant: "info" });
   };
 
+  // ---- AI proofreading -------------------------------------------------
+  // The suggestion streams into a panel; nothing touches the page until the
+  // writer accepts it, and the original stays on screen the whole time.
+  const proofreadBusy = proofread.status === "streaming";
+  /** A key on the server, or one the writer saved in Settings. */
+  const aiAvailable = aiEnabled || settings.geminiApiKey.trim().length > 0;
+
+  const startProofread = () => {
+    if (!content.trim() || proofreadBusy) return;
+    void proofread.start(content);
+  };
+
+  const applyProofread = () => {
+    const corrected = proofread.draft.trimEnd();
+    if (!corrected) return;
+    setContent(corrected);
+    dirtyRef.current = true;
+    setDirty(true);
+    proofread.reset();
+    toast({ title: "Page polished", description: "The corrected version is on the page.", variant: "success" });
+    contentRef.current?.focus();
+  };
+
   return (
     <motion.div
       key={selectedDate}
@@ -207,6 +236,31 @@ export function EditorView() {
           </div>
 
           <div className="flex items-center gap-1">
+            {/* Only offered when a key exists somewhere — the server's or one
+                saved in Settings. A button that can only fail is worse than
+                no button. */}
+            {aiAvailable && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="soft"
+                    size="sm"
+                    className="mr-1"
+                    onClick={startProofread}
+                    disabled={!content.trim() || proofreadBusy}
+                    aria-label="Fix spelling and grammar with AI"
+                  >
+                    {proofreadBusy ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <WandSparkles className="h-3.5 w-3.5" />
+                    )}
+                    <span className="hidden sm:inline">{proofreadBusy ? "Fixing…" : "Fix with AI"}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Send this page to Gemini to fix any mistakes</TooltipContent>
+              </Tooltip>
+            )}
             <FavoriteButton
               favorite={favorite}
               onToggle={() => toggleFavorite(selectedDate)}
@@ -310,6 +364,24 @@ export function EditorView() {
             autoFocus
           />
         </div>
+
+        {/* AI proofreading suggestion */}
+        <AnimatePresence>
+          {proofread.status !== "idle" && (
+            <ProofreadPanel
+              status={proofread.status}
+              draft={proofread.draft}
+              error={proofread.error}
+              unchanged={
+                !proofreadBusy && proofread.draft.trim() !== "" && proofread.draft.trim() === content.trim()
+              }
+              onApply={applyProofread}
+              onStop={proofread.stop}
+              onRetry={startProofread}
+              onDismiss={proofread.reset}
+            />
+          )}
+        </AnimatePresence>
 
         {/* footer */}
         <footer className="mt-10 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border/70 pt-4 text-[11px] text-faint">

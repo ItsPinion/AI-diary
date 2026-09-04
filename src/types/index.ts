@@ -43,4 +43,13 @@ export interface DiarySettings {
   compact: boolean;
   /** Autosave cadence in milliseconds. */
   autosaveMs: number;
+  /** ISO time of the last JSON backup download, or null if there hasn't been one. */
+  lastBackupAt: string | null;
+  /** How often to nudge about backing up, in days. 0 turns reminders off. */
+  backupReminderDays: number;
+  /**
+   * Optional personal Gemini API key for "Fix with AI". Empty means "use the
+   * server's GEMINI_API_KEY". Stored in this browser only.
+   */
+  geminiApiKey: string;
 }
