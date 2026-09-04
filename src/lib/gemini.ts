@@ -81,6 +81,16 @@ export function buildProofreadRequest(title: string, content: string): Proofread
 }
 
 /**
+ * Models sometimes wrap their reply in a code fence despite being told not
+ * to. Strip one enclosing fence if present; leave everything else untouched.
+ */
+function stripCodeFence(text: string): string {
+  const t = text.trim();
+  const match = t.match(/^```[a-zA-Z]*\n([\s\S]*)\n?```$/);
+  return match ? match[1].trim() : t;
+}
+
+/**
  * Split Gemini's reply back into title + body. Lenient: if the model ignored
  * the requested format, the whole reply is treated as the body and the title
  * is left untouched (returned as "").
@@ -89,7 +99,7 @@ export function parseProofread(
   draft: string,
   shape: Pick<ProofreadRequestShape, "hadTitle" | "hadContent">,
 ): { title: string; content: string } {
-  const text = draft.trim();
+  const text = stripCodeFence(draft).trim();
   if (!shape.hadTitle) return { title: "", content: text };
   if (!shape.hadContent) return { title: text.replace(/^title:\s*/i, "").trim(), content: "" };
   let body = text;

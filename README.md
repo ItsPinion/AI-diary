@@ -42,6 +42,7 @@ npm run dev        # start the dev server → http://localhost:3000
 npm run build      # production build
 npm run start      # serve the production build
 npm run lint       # ESLint (zero warnings expected)
+npm test           # run the unit test suite (Vitest)
 ```
 
 > **Node 18.18+** required. No environment variables, no backend. The optional
@@ -84,6 +85,7 @@ src/
 │   └── ui/            # shadcn-style primitives (button, dialog, sheet…)
 ├── hooks/             # useDiary (state engine), useProofread (Gemini stream), shortcuts…
 ├── lib/               # storage, dates, stats, search, export, quotes, bus, gemini
+│   └── __tests__/     # Vitest unit tests for the pure logic above
 ├── constants/         # moods, themes, settings defaults, shortcuts
 ├── styles/            # Design tokens (all 6 themes), fonts, base styles
 └── types/             # Shared TypeScript types
