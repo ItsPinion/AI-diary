@@ -1,5 +1,5 @@
 import type { DiaryEntry } from "@/types";
-import { formatFull, isValidDateKey } from "@/lib/dates";
+import { formatFull, isValidDateKey, todayKey } from "@/lib/dates";
 import { MOODS, moodById } from "@/constants/moods";
 import { createEntry } from "@/lib/storage";
 
@@ -67,6 +67,17 @@ export function downloadFile(name: string, content: string, mime: string): void 
   anchor.click();
   anchor.remove();
   setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+/**
+ * One-click full backup: a single lossless JSON file (every page, mood and
+ * star) named with today's date. Returns the file name so callers can confirm
+ * what was saved.
+ */
+export function downloadBackup(entries: DiaryEntry[]): string {
+  const name = `inkwell-backup-${todayKey()}.json`;
+  downloadFile(name, entriesToJson(entries), "application/json");
+  return name;
 }
 
 /** Parse an imported file (JSON array or { entries: [...] }) into valid entries. */

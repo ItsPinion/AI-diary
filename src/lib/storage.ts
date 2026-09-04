@@ -1,5 +1,5 @@
 import type { DiaryEntry, DiarySettings } from "@/types";
-import { DEFAULT_SETTINGS, STORAGE_KEYS } from "@/constants/settings";
+import { BACKUP_REMINDER_OPTIONS, DEFAULT_SETTINGS, STORAGE_KEYS } from "@/constants/settings";
 import { isValidDateKey } from "@/lib/dates";
 import { uid } from "@/lib/id";
 import { MOOD_ORDER } from "@/constants/moods";
@@ -85,6 +85,14 @@ export function loadSettings(): DiarySettings {
         typeof parsed.autosaveMs === "number" && parsed.autosaveMs >= 500
           ? parsed.autosaveMs
           : DEFAULT_SETTINGS.autosaveMs,
+      lastBackupAt:
+        typeof parsed.lastBackupAt === "string" && !Number.isNaN(Date.parse(parsed.lastBackupAt))
+          ? parsed.lastBackupAt
+          : null,
+      backupReminderDays: BACKUP_REMINDER_OPTIONS.some((option) => option.value === parsed.backupReminderDays)
+        ? (parsed.backupReminderDays as number)
+        : DEFAULT_SETTINGS.backupReminderDays,
+      geminiApiKey: typeof parsed.geminiApiKey === "string" ? parsed.geminiApiKey.trim() : "",
     };
   } catch {
     return DEFAULT_SETTINGS;

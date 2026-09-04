@@ -17,8 +17,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FFF9F3" },
-    { media: "(prefers-color-scheme: dark)", color: "#17130f" },
+    { media: "(prefers-color-scheme: light)", color: "#F7F4FA" },
+    { media: "(prefers-color-scheme: dark)", color: "#15111D" },
   ],
 };
 
@@ -26,13 +26,17 @@ export const viewport: Viewport = {
 const themeBootScript = `try{var s=JSON.parse(localStorage.getItem('inkwell.settings.v1')||'null');if(s&&s.theme)document.documentElement.dataset.theme=s.theme}catch(e){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // Only a boolean crosses to the browser — never the key itself. Without a
+  // key on the server the editor doesn't render the "Fix with AI" button at all.
+  const aiEnabled = Boolean(process.env.GEMINI_API_KEY?.trim());
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body className="min-h-dvh bg-background font-sans text-foreground antialiased">
-        <Providers>{children}</Providers>
+        <Providers aiEnabled={aiEnabled}>{children}</Providers>
       </body>
     </html>
   );

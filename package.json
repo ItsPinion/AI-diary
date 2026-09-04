@@ -7,12 +7,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "verify:ai": "node scripts/verify-proofread.mts && node scripts/verify-route.mts",
+    "verify": "node scripts/verify-proofread.mts && node scripts/verify-route.mts && node scripts/verify-backup.mts"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",
     "@fontsource/dm-serif-display": "^5.3.0",
     "@fontsource/playfair-display": "^5.3.0",
+    "@google/genai": "^2.21.0",
     "@radix-ui/react-dialog": "^1.1.6",
     "@radix-ui/react-dropdown-menu": "^2.1.6",
     "@radix-ui/react-popover": "^1.1.6",

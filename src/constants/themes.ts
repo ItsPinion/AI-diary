@@ -56,6 +56,9 @@ export const THEME_MAP: Record<ThemeId, ThemeMeta> = THEMES.reduce(
   {} as Record<ThemeId, ThemeMeta>,
 );
 
+/** The palette a fresh diary opens in — kept in step with DEFAULT_SETTINGS. */
+export const DEFAULT_THEME: ThemeId = "lavender";
+
 export function themeById(id: ThemeId): ThemeMeta {
-  return THEME_MAP[id] ?? THEMES[0];
+  return THEME_MAP[id] ?? THEME_MAP[DEFAULT_THEME] ?? THEMES[0];
 }

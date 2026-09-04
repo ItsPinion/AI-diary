@@ -18,6 +18,7 @@ import { useTheme } from "next-themes";
 import { useDiary } from "@/hooks/use-diary";
 import { useStats } from "@/hooks/use-stats";
 import { Sheet } from "@/components/ui/sheet";
+import { BackupNudge } from "@/components/backup/backup-nudge";
 import { THEMES } from "@/constants/themes";
 import { cn } from "@/lib/utils";
 import type { AppView } from "@/types";
@@ -121,6 +122,8 @@ export function MobileNav({
               Shortcuts
             </button>
           </div>
+
+          <BackupNudge className="mt-4" />
 
           {/* nav */}
           <nav aria-label="Main" className="mt-4 space-y-1">

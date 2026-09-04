@@ -1,10 +1,13 @@
 import type { DiarySettings } from "@/types";
 
 export const DEFAULT_SETTINGS: DiarySettings = {
-  theme: "aurora",
+  theme: "lavender",
   fontSize: "md",
   compact: false,
   autosaveMs: 1000,
+  lastBackupAt: null,
+  backupReminderDays: 7,
+  geminiApiKey: "",
 };
 
 /** Body text classes for each type size, used by the editor. */
@@ -18,6 +21,15 @@ export function fontSizeClasses(size: DiarySettings["fontSize"]): string {
       return "text-[1.06rem] leading-8";
   }
 }
+
+export const BACKUP_REMINDER_OPTIONS: { value: number; label: string }[] = [
+  { value: 1, label: "Daily" },
+  { value: 3, label: "3 days" },
+  { value: 7, label: "Weekly" },
+  { value: 14, label: "2 weeks" },
+  { value: 30, label: "Monthly" },
+  { value: 0, label: "Never" },
+];
 
 export const AUTOSAVE_OPTIONS: { value: number; label: string }[] = [
   { value: 1000, label: "Every second" },
