@@ -5,14 +5,18 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Check,
   Clock,
+  Loader2,
   MoreHorizontal,
   Sparkles,
   Star,
   Trash2,
+  WandSparkles,
 } from "lucide-react";
 import { useDiary } from "@/hooks/use-diary";
+import { useProofread } from "@/hooks/use-proofread";
 import { useToast } from "@/components/ui/toast";
 import { MoodPicker } from "@/components/editor/mood-picker";
+import { ProofreadPanel } from "@/components/editor/proofread-panel";
 import { WRITING_PROMPTS } from "@/components/editor/prompts";
 import { moodById } from "@/constants/moods";
 import { FavoriteButton } from "@/components/cards/entry-card";
@@ -22,6 +26,11 @@ import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { bus } from "@/lib/bus";
+import {
+  buildProofreadRequest,
+  parseProofread,
+  type ProofreadRequestShape,
+} from "@/lib/gemini";
 import { formatDayLong, formatLong } from "@/lib/dates";
 import { countWords, readingTimeMinutes } from "@/lib/stats";
 import { fontSizeClasses } from "@/constants/settings";
@@ -47,6 +56,71 @@ export function EditorView() {
   const contentRef = React.useRef<HTMLTextAreaElement>(null);
 
   const isCurrentDay = selectedDate === today;
+
+  // ---- AI proofreading ------------------------------------------------
+  const proofread = useProofread();
+  const { reset: resetProofread } = proofread;
+  const shapeRef = React.useRef<Pick<ProofreadRequestShape, "hadTitle" | "hadContent">>({
+    hadTitle: false,
+    hadContent: false,
+  });
+
+  // Leaving a page mid-proofread cancels the stream and closes the panel.
+  React.useEffect(() => {
+    resetProofread();
+    shapeRef.current = { hadTitle: false, hadContent: false };
+  }, [selectedDate, resetProofread]);
+
+  const handleFixWriting = () => {
+    if (proofread.status === "streaming") return;
+    if (title.trim() === "" && content.trim() === "") {
+      toast({
+        title: "Nothing to fix yet",
+        description: "Write a little first, then let Gemini polish it.",
+        variant: "info",
+      });
+      return;
+    }
+    if (settings.geminiApiKey.trim() === "") {
+      toast({
+        title: "Add a Gemini API key",
+        description: "Settings → AI proofreading. It never leaves this device.",
+        variant: "info",
+      });
+      bus.emit("open-settings");
+      return;
+    }
+    const shape = buildProofreadRequest(title, content);
+    shapeRef.current = shape;
+    proofread.start(settings.geminiApiKey.trim(), shape.prompt);
+  };
+
+  const handleApplyProofread = () => {
+    const { title: fixedTitle, content: fixedContent } = parseProofread(
+      proofread.draft,
+      shapeRef.current,
+    );
+    if (fixedTitle !== "") setTitle(fixedTitle);
+    if (fixedContent !== "") setContent(fixedContent);
+    dirtyRef.current = true;
+    setDirty(true);
+    proofread.reset();
+    toast({
+      title: "Page updated",
+      description: "Gemini's corrections are in — autosave keeps them safe.",
+      variant: "success",
+    });
+  };
+
+  const handleCopyProofread = async (): Promise<boolean> => {
+    try {
+      await navigator.clipboard.writeText(proofread.draft);
+      return true;
+    } catch {
+      toast({ title: "Couldn't copy", description: "Your browser blocked clipboard access.", variant: "error" });
+      return false;
+    }
+  };
 
   // Refs mirror the latest buffer so effects can flush without stale closures.
   const titleBufferRef = React.useRef(title);
@@ -207,6 +281,26 @@ export function EditorView() {
           </div>
 
           <div className="flex items-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Fix writing with Gemini"
+                  disabled={proofread.status === "streaming"}
+                  onClick={handleFixWriting}
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-muted outline-none transition-colors hover:bg-accent/10 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait disabled:opacity-60"
+                >
+                  {proofread.status === "streaming" ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-accent" />
+                  ) : (
+                    <WandSparkles className="h-4 w-4" />
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {proofread.status === "streaming" ? "Proofreading…" : "Fix writing with Gemini"}
+              </TooltipContent>
+            </Tooltip>
             <FavoriteButton
               favorite={favorite}
               onToggle={() => toggleFavorite(selectedDate)}
@@ -310,6 +404,22 @@ export function EditorView() {
             autoFocus
           />
         </div>
+
+        {/* AI proofread preview */}
+        <AnimatePresence>
+          {proofread.status !== "idle" && (
+            <ProofreadPanel
+              status={proofread.status}
+              draft={proofread.draft}
+              error={proofread.error}
+              textClass={fontSizeClasses(settings.fontSize)}
+              onStop={proofread.stop}
+              onApply={handleApplyProofread}
+              onCopy={handleCopyProofread}
+              onDismiss={proofread.reset}
+            />
+          )}
+        </AnimatePresence>
 
         {/* footer */}
         <footer className="mt-10 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border/70 pt-4 text-[11px] text-faint">

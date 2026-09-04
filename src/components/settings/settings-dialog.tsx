@@ -7,6 +7,7 @@ import {
   FileText,
   LayoutPanelTop,
   RotateCcw,
+  Sparkles,
   Type,
   Upload,
   Zap,
@@ -14,6 +15,7 @@ import {
 import { useDiary } from "@/hooks/use-diary";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
@@ -142,7 +144,8 @@ export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenCh
           <DialogHeader>
             <DialogTitle>Settings</DialogTitle>
             <DialogDescription>
-              Your diary never leaves this device — everything is stored locally in your browser.
+              Everything is stored locally in your browser. The one exception: when you ask Gemini
+              to fix a page, that page&apos;s text is sent to Google.
             </DialogDescription>
           </DialogHeader>
 
@@ -189,6 +192,37 @@ export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenCh
                   onChange={(autosaveMs) => updateSettings({ autosaveMs })}
                 />
                 <p className="text-xs text-faint">Your words are also saved when you leave the page.</p>
+              </div>
+            </Section>
+
+            <Separator />
+
+            <Section icon={<Sparkles className="h-3.5 w-3.5" />} title="AI proofreading">
+              <div className="space-y-2">
+                <Label htmlFor="gemini-api-key">Gemini API key</Label>
+                <Input
+                  id="gemini-api-key"
+                  type="password"
+                  value={settings.geminiApiKey}
+                  onChange={(e) => updateSettings({ geminiApiKey: e.target.value })}
+                  placeholder="Paste your Gemini API key (AIza…)"
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                <p className="text-xs leading-5 text-faint">
+                  Optional — powers the “Fix writing” button on each page. The key is stored on this
+                  device like the rest of your diary, and your text is sent to Google Gemini only
+                  when you press that button. Get a free key at{" "}
+                  <a
+                    href="https://aistudio.google.com/api-keys"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-accent underline decoration-accent/40 underline-offset-2 transition-colors hover:decoration-accent"
+                  >
+                    aistudio.google.com
+                  </a>
+                  .
+                </p>
               </div>
             </Section>
 

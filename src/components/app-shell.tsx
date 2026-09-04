@@ -56,6 +56,9 @@ export function AppShell() {
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [collapsed, setCollapsed] = React.useState(false);
 
+  // Components deep in the tree (e.g. the editor) can ask for settings.
+  React.useEffect(() => bus.on("open-settings", () => setSettingsOpen(true)), []);
+
   useKeyboardShortcuts({
     "mod+s": () => bus.emit("save"),
     "mod+f": () => {

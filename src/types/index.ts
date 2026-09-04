@@ -43,4 +43,10 @@ export interface DiarySettings {
   compact: boolean;
   /** Autosave cadence in milliseconds. */
   autosaveMs: number;
+  /**
+   * Optional Gemini API key for the "Fix writing" proofreader.
+   * Empty string = feature off. Stored locally, sent only to Google when
+   * the user explicitly asks for a proofread.
+   */
+  geminiApiKey: string;
 }

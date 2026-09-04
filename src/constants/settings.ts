@@ -5,6 +5,7 @@ export const DEFAULT_SETTINGS: DiarySettings = {
   fontSize: "md",
   compact: false,
   autosaveMs: 1000,
+  geminiApiKey: "",
 };
 
 /** Body text classes for each type size, used by the editor. */

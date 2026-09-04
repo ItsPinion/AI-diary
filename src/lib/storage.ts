@@ -85,6 +85,7 @@ export function loadSettings(): DiarySettings {
         typeof parsed.autosaveMs === "number" && parsed.autosaveMs >= 500
           ? parsed.autosaveMs
           : DEFAULT_SETTINGS.autosaveMs,
+      geminiApiKey: typeof parsed.geminiApiKey === "string" ? parsed.geminiApiKey : "",
     };
   } catch {
     return DEFAULT_SETTINGS;

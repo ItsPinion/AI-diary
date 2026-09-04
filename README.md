@@ -8,7 +8,8 @@ notebook: warm paper, ink, generous whitespace and quiet, deliberate motion. Eve
 is stored in your browser's LocalStorage and the entire app works offline.
 
 Built with **Next.js 15**, **React 19**, **TypeScript**, **TailwindCSS**, **Framer Motion**
-and **shadcn/ui**-style components.
+and **shadcn/ui**-style components, with an optional **Google Gemini** (`@google/genai`,
+streaming) proofreading feature.
 
 ---
 
@@ -26,6 +27,7 @@ and **shadcn/ui**-style components.
 - **Six handcrafted themes** — Aurora, Ocean, Forest, Lavender, Sunset and Midnight — each with a light and dark variant.
 - **Dark mode** — light / dark / system, independent of the palette.
 - **Export & import** — JSON, Markdown and plain text export; JSON import with merge or replace.
+- **AI proofreading (optional)** — the ✨ “Fix writing” button sends the page to Google Gemini, which streams back a faithful, corrected draft live. Review it, then apply, copy, or dismiss. Requires a free Gemini API key that you add in Settings; it is stored on this device and only used when you ask.
 - **Keyboard shortcuts** — ⌘/Ctrl+S, ⌘/Ctrl+F, ⌘/Ctrl+1–4, ⌘/Ctrl+D, `?` for the cheat sheet.
 - **Micro-interactions** — ink ripples on press, card lifts, staggered list entrances, page-transition fades, floating action button, bottom-sheet navigation on mobile.
 - **Accessible** — semantic markup, ARIA labels, focus rings, skip-to-content, `prefers-reduced-motion` support, full keyboard navigation.
@@ -42,7 +44,9 @@ npm run start      # serve the production build
 npm run lint       # ESLint (zero warnings expected)
 ```
 
-> **Node 18.18+** required. No environment variables, no API keys, no backend.
+> **Node 18.18+** required. No environment variables, no backend. The optional
+> “Fix writing” feature works with your own Gemini API key, entered in
+> Settings → AI proofreading (a free one from [aistudio.google.com](https://aistudio.google.com/api-keys)).
 
 ### Deploy
 
@@ -68,7 +72,8 @@ src/
 │   ├── calendar/      # Monthly calendar view
 │   ├── cards/         # EntryCard, StatCard, FavoriteButton
 │   ├── dialogs/       # ConfirmDialog, ShortcutsDialog
-│   ├── editor/        # The writing experience (editor, mood picker, prompts)
+│   ├── editor/        # The writing experience (editor, mood picker, prompts,
+│   │                  #   proofread panel)
 │   ├── illustrations/ # Hand-drawn-style diary SVG
 │   ├── layout/        # Sidebar, header, mobile nav, app shell
 │   ├── search/        # Search bar + mobile search sheet
@@ -77,8 +82,8 @@ src/
 │   ├── theme/         # Theme switcher
 │   ├── timeline/      # Journal view
 │   └── ui/            # shadcn-style primitives (button, dialog, sheet…)
-├── hooks/             # useDiary (state engine), autosave, shortcuts, stats…
-├── lib/               # storage, dates, stats, search, export, quotes, bus
+├── hooks/             # useDiary (state engine), useProofread (Gemini stream), shortcuts…
+├── lib/               # storage, dates, stats, search, export, quotes, bus, gemini
 ├── constants/         # moods, themes, settings defaults, shortcuts
 ├── styles/            # Design tokens (all 6 themes), fonts, base styles
 └── types/             # Shared TypeScript types
@@ -103,6 +108,7 @@ interface DiarySettings {
   fontSize: "sm" | "md" | "lg";
   compact: boolean;
   autosaveMs: number;  // 1000 | 2000 | 5000 | 10000
+  geminiApiKey: string; // optional — empty turns the AI proofreader off
 }
 ```
 
@@ -119,8 +125,11 @@ Reads are defensive: corrupt or unknown values are ignored, invalid entries are
 dropped, and entries are de-duplicated by date (last write wins). Writes are
 debounced and a final flush happens on `beforeunload`.
 
-> **Privacy** — your diary never leaves the device. Export a JSON backup if you
-> want to move browsers.
+> **Privacy** — your diary never leaves the device. The single exception is the
+> optional “Fix writing” button: when you press it, that one page's text is
+> sent to Google Gemini to be proofread (streamed back live, and only written
+> back after you apply it). The API key itself is stored locally like
+> everything else. Export a JSON backup if you want to move browsers.
 
 ---
 
@@ -168,6 +177,23 @@ debounced and a final flush happens on `beforeunload`.
 
 Import validation is strict: malformed files, invalid dates and unknown moods are
 rejected or ignored, and a confirmation screen shows exactly what was found.
+
+---
+
+## ✨ AI proofreading ("Fix writing")
+
+- The wand button in the editor header sends the page's title and body to Google
+  Gemini (`gemini-3.8-flash`) with a strict guardrail: fix spelling, grammar,
+  punctuation and awkward phrasing — but never change the meaning, tone or
+  author's ideas.
+- The corrected draft **streams in live** in a preview panel (with a blinking
+  caret and a Stop button). Nothing is written back until you press
+  **"Use this version"** — or copy it, or dismiss it.
+- Works on a title, a body, or both; the title is fixed in the same pass and
+  the reply is parsed back into the two fields.
+- The key is optional and stored locally. With no key the button opens Settings.
+- The model name is a single constant in `src/constants/gemini.ts` — swap it when
+  a newer model ships.
 
 ---
 
