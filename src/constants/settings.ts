@@ -1,7 +1,7 @@
 import type { DiarySettings } from "@/types";
 
 export const DEFAULT_SETTINGS: DiarySettings = {
-  theme: "aurora",
+  theme: "lavender",
   fontSize: "md",
   compact: false,
   autosaveMs: 1000,

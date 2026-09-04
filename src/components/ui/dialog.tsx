@@ -42,14 +42,18 @@ export function DialogContent({
       <DialogPrimitive.Content asChild forceMount>
         <motion.div
           className={cn(
-            "fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2",
+            // Centring lives in the motion values below, not in Tailwind's
+            // -translate-* utilities: Framer Motion writes `transform` inline,
+            // which would override them and leave the dialog's top-left corner
+            // pinned to the middle of the screen.
+            "fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg",
             "rounded-3xl border border-border/70 bg-card p-6 shadow-lift outline-none",
             "max-h-[85vh] overflow-y-auto",
             className,
           )}
-          initial={{ opacity: 0, scale: 0.95, y: 18 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.97, y: 10 }}
+          initial={{ opacity: 0, scale: 0.95, x: "-50%", y: "-46%" }}
+          animate={{ opacity: 1, scale: 1, x: "-50%", y: "-50%" }}
+          exit={{ opacity: 0, scale: 0.97, x: "-50%", y: "-48%" }}
           transition={{ duration: 0.3, ease: EASE }}
         >
           {children}

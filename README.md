@@ -25,7 +25,7 @@ and **shadcn/ui**-style components.
 - **Favourite pages** — star the ones that matter; they get their own sidebar section.
 - **Calendar** — a monthly view with mood-coloured dots; click any day to open (or start) its page.
 - **Insights** — total pages, current & longest streaks, words, characters, favourite mood, a monthly bar chart and a year-long writing heatmap.
-- **Six handcrafted themes** — Aurora, Ocean, Forest, Lavender, Sunset and Midnight — each with a light and dark variant.
+- **Six handcrafted themes** — Lavender (the default), Aurora, Ocean, Forest, Sunset and Midnight — each with a light and dark variant.
 - **Dark mode** — light / dark / system, independent of the palette.
 - **Backups** — one-click full backup to a single JSON file, plus a reminder on your chosen cadence (daily → monthly, or off) that appears in the sidebar only when pages have changed since the last backup.
 - **Export & import** — JSON, Markdown and plain text export; JSON import with merge or replace, which is also how a backup is restored.
@@ -146,7 +146,7 @@ interface DiaryEntry {
 }
 
 interface DiarySettings {
-  theme: "aurora" | "ocean" | "forest" | "lavender" | "sunset" | "midnight";
+  theme: "lavender" | "aurora" | "ocean" | "forest" | "sunset" | "midnight"; // default: lavender
   fontSize: "sm" | "md" | "lg";
   compact: boolean;
   autosaveMs: number;  // 1000 | 2000 | 5000 | 10000

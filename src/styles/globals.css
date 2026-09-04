@@ -9,25 +9,47 @@
    ================================================================ */
 
 @layer base {
-  /* Default: Aurora (light) — also the no-JS fallback. */
+  /* Default: Lavender (light) — also the no-JS fallback, so the very first
+     paint is purple rather than a flash of another palette. */
   :root {
     color-scheme: light;
 
-    --background: 34 100% 97.6%;
-    --background-secondary: 33 85% 94.5%;
-    --card: 40 100% 100%;
-    --card-foreground: 28 22% 18%;
-    --border: 33 30% 88%;
-    --border-strong: 32 24% 79%;
-    --foreground: 28 22% 18%;
-    --muted: 30 12% 42%;
-    --faint: 31 12% 62%;
-    --accent: 12 100% 70%;
+    --background: 262 40% 97%;
+    --background-secondary: 260 36% 93%;
+    --card: 265 60% 99.5%;
+    --card-foreground: 258 25% 20%;
+    --border: 260 22% 88%;
+    --border-strong: 259 18% 79%;
+    --foreground: 258 25% 20%;
+    --muted: 258 14% 43%;
+    --faint: 258 13% 63%;
+    --accent: 260 38% 63%;
     --accent-foreground: 0 0% 100%;
-    --secondary: 45 100% 71%;
-    --secondary-foreground: 38 60% 18%;
-    --ring: 12 92% 64%;
-    --shadow: 30 40% 18%;
+    --secondary: 258 48% 82%;
+    --secondary-foreground: 260 35% 20%;
+    --ring: 260 42% 58%;
+    --shadow: 260 35% 16%;
+  }
+
+  /* Dark mode before a saved palette has been applied. Sits above the theme
+     blocks so any [data-theme=…] rule still wins once one is set. */
+  :root.dark {
+    color-scheme: dark;
+    --background: 262 28% 9%;
+    --background-secondary: 262 22% 12.5%;
+    --card: 262 20% 12%;
+    --card-foreground: 258 35% 91%;
+    --border: 260 14% 22%;
+    --border-strong: 259 12% 30%;
+    --foreground: 258 35% 91%;
+    --muted: 258 14% 62%;
+    --faint: 258 10% 45%;
+    --accent: 258 45% 72%;
+    --accent-foreground: 260 40% 12%;
+    --secondary: 258 40% 60%;
+    --secondary-foreground: 260 40% 14%;
+    --ring: 258 45% 72%;
+    --shadow: 0 0% 0%;
   }
 
   [data-theme="aurora"] {
